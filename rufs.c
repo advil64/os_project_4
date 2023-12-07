@@ -25,6 +25,11 @@
 char diskfile_path[PATH_MAX];
 
 // Declare your in-memory data structures here
+struct superblock *rufs_superblock;
+struct dirent *rufs_dirent;
+
+bitmap_t inode_bmap;
+bitmap_t db_bmap;
 
 /* 
  * Get available inode number from bitmap
@@ -140,16 +145,69 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 int rufs_mkfs() {
 
 	// Call dev_init() to initialize (Create) Diskfile
+	dev_init(diskfile_path);
 
 	// write superblock information
 
-	// initialize inode bitmap
+	rufs_superblock = (struct superblock *) malloc(BLOCK_SIZE);
+	rufs_superblock->magic_num  = MAGIC_NUM;
+	rufs_superblock->max_inum = MAX_INUM;
+	rufs_superblock->max_dnum = MAX_DNUM;
+	rufs_superblock->i_bitmap_blk = 1;
+	rufs_superblock->d_bitmap_blk = 2;
+	rufs_superblock->i_start_blk = 3;
+	rufs_superblock->d_start_blk = 3 + INODE_BLOCKS;
+    bio_write(0, rufs_superblock);
 
+	// initialize inode bitmap
+    inode_bmap = (bitmap_t)malloc(BLOCK_SIZE);
+    
 	// initialize data block bitmap
+    db_bmap = (bitmap_t)malloc(BLOCK_SIZE);
 
 	// update bitmap information for root directory
+    set_bitmap(inode_bmap, 0);    
+    bio_write(rufs_superblock->i_bitmap_blk, inode_bmap) ;
+
+    set_bitmap(db_bmap, 0);
+    bio_write(rufs_superblock->d_bitmap_blk, db_bmap);
 
 	// update inode for root directory
+    struct inode *root_inode = (struct inode *)malloc(BLOCK_SIZE);
+    root_inode->ino = 0;
+	root_inode->valid = 1;
+	root_inode->type = 1; // directory
+	root_inode->link = 0;
+	root_inode->direct_ptr[0] = rufs_superblock->d_bitmap_blk;
+	root_inode->indirect_ptr[0] = 0;
+    root_inode->direct_ptr[1] = 0;
+	
+    // inode attributes
+    struct stat *root_inode_stat = (struct stat *)malloc(sizeof(struct stat));
+    root_inode_stat->st_mode = S_IFDIR | 0755;
+    root_inode_stat->st_nlink = 1;
+    root_inode_stat->st_blksize = BLOCK_SIZE;
+    root_inode_stat->st_blocks = 1;
+    time(&root_inode_stat->st_mtime);
+    time(&root_inode_stat->st_atime);
+    root_inode->vstat = *root_inode_stat;
+
+    //save root INODE
+    bio_write(rufs_superblock->i_start_blk, root_inode);
+    free(root_inode_stat);
+    free(root_inode);
+
+    // directory entry for root directory
+    struct dirent *root_dir = (struct dirent *)malloc(BLOCK_SIZE);
+    root_dir->ino = 0; //inode is the first one
+    root_dir->valid = 1;
+
+    char dir_path[2] = { '.', '\0' };
+    strncpy(root_dir->name, dir_path, 2);
+
+    bio_write(rufs_superblock->d_start_blk, root_dir);
+	free(root_dir);
+    free(rufs_superblock);
 
 	return 0;
 }
@@ -157,22 +215,52 @@ int rufs_mkfs() {
 
 /* 
  * FUSE file operations
+   
  */
+
+//	@author - Taj
 static void *rufs_init(struct fuse_conn_info *conn) {
 
 	// Step 1a: If disk file is not found, call mkfs
+	// diskfile_path = -1
+	if(dev_open(diskfile_path) == -1) 
+	{
+		//call mkfs
+		rufs_mkfs();
+		return NULL;
+	}
+	
 
-  // Step 1b: If disk file is found, just initialize in-memory data structures
-  // and read superblock from disk
+	// Step 1b: If disk file is found, just initialize in-memory data structures
+	// and read superblock from disk
+	rufs_superblock = (struct superblock *) malloc(BLOCK_SIZE);
+	bio_read(0, rufs_superblock);
+	inode_bmap = (bitmap_t) malloc(BLOCK_SIZE);
+	bio_read(rufs_superblock->i_bitmap_blk, inode_bmap);
+	db_bmap = (bitmap_t) malloc(BLOCK_SIZE); 
+	bio_read(rufs_superblock->d_bitmap_blk, db_bmap);
 
 	return NULL;
 }
 
+
+// called when RUFS is unmounted. in this function de-allocate in-memory file system
+// data structures, and close the flat file (our "disk")
 static void rufs_destroy(void *userdata) {
 
 	// Step 1: De-allocate in-memory data structures
+	/*
+		- superblock
+		- inodes
+		- bitmap
+	*/
+
+	free(inode_bmap);
+	free(db_bmap);
+	free(rufs_superblock);
 
 	// Step 2: Close diskfile
+	dev_close();
 
 }
 

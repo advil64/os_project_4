@@ -17,6 +17,10 @@
 #define MAX_INUM 1024
 #define MAX_DNUM 16384
 
+// Derived Values
+#define INODE_BLOCKS (MAX_INUM / (BLOCK_SIZE / 256))
+#define INODES_PER_BLOCK ()
+
 
 struct superblock {
 	uint32_t	magic_num;			/* magic number */
@@ -42,7 +46,7 @@ struct inode {
 struct dirent {
 	uint16_t ino;					/* inode number of the directory entry */
 	uint16_t valid;					/* validity of the directory entry */
-	char name[208];					/* name of the directory entry */
+	char name[250];					/* name of the directory entry */
 	uint16_t len;					/* length of name */
 };
 
