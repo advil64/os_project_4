@@ -8,13 +8,15 @@
             "name": "Mount RUFS",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/common/home/ac1771/Desktop/os_project_4/rufs",
-            "args": ["-s", "/tmp/ac1771/mountdir"],
+            "program": "/common/home/ac1771/Desktop/Operating Systems/project_4/rufs",
+            "args": ["-s", "-d", "/tmp/ac1771/mountdir"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
+            "preLaunchTask": "make rufs",
+            "postDebugTask": "unmountFUSE",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -29,28 +31,13 @@
             ]
         },
         {
-            "name": "Attach to RUFS",
-            "type": "cppdbg",
-            "request": "attach",
-            "processId":"${command:pickProcess}",
-            "program": "/common/home/ac1771/Desktop/os_project_4/rufs",
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-        },
-        {
-            "name": "Launch Test",
+            "name": "Simple Test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/common/home/ac1771/Desktop/os_project_4/benchmark/simple_test",
+            "program": "/common/home/ac1771/Desktop/Operating Systems/project_4/benchmark/simple_test",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "/common/home/ac1771/Desktop/Operating Systems/project_4/benchmark",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
