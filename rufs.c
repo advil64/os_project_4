@@ -36,14 +36,32 @@ bitmap_t db_bmap;
  */
 int get_avail_ino()
 {
+   // Step 1: Read inode bitmap from disk
+   int readStatus = bio_read(rufs_superblock->i_bitmap_blk, inode_bmap);
+   if(readStatus < 0)
+   {
+       //read error
+       return -1;
+   }
 
-	// Step 1: Read inode bitmap from disk
+   // Step 2: Traverse inode bitmap to find an available slot
+   int i = 0;
+   for(i; i < MAX_INUM ; i++)
+   {
+       if (get_bitmap(inode_bmap, i) == 0)
+       {
+           // Step 3: Update inode bitmap and write to disk
+           set_bitmap(inode_bmap, i);
+           bio_write(rufs_superblock->i_bitmap_blk, inode_bmap);
+          
+           //return inode number.
+           return i;
+       }
+   }
 
-	// Step 2: Traverse inode bitmap to find an available slot
 
-	// Step 3: Update inode bitmap and write to disk
-
-	return 0;
+   //this means that there is no available slot
+   return -1;
 }
 
 /*
@@ -52,13 +70,30 @@ int get_avail_ino()
 int get_avail_blkno()
 {
 
-	// Step 1: Read data block bitmap from disk
+   // Step 1: Read data block bitmap from disk
+   int readStatus = bio_read(rufs_superblock->d_bitmap_blk, db_bmap);
+   if(readStatus < 0)
+   {
+       // read error
+       return -1;
+   }
 
-	// Step 2: Traverse data block bitmap to find an available slot
+   // Step 2: Traverse data block bitmap to find an available slot
+   int i = 0;
+   for(i ; i < MAX_DNUM; i++)
+   {
+       if(get_bitmap(db_bmap, i) == 0)
+       {
+           // Step 3: Update data block bitmap and write to disk
+           set_bitmap(db_bmap,i);
+           bio_write(rufs_superblock->d_bitmap_blk, db_bmap);
+           //set this data block in the bitmap and returnthis data block number
+           return rufs_superblock->d_start_blk + i;
+       }
+   }
 
-	// Step 3: Update data block bitmap and write to disk
-
-	return 0;
+   //this means that there is no available slot
+   return -1;
 }
 
 /*
