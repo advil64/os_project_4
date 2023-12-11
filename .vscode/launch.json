@@ -11,7 +11,7 @@
             "program": "/common/home/ac1771/Desktop/Operating Systems/project_4/rufs",
             "args": ["-s", "-d", "/tmp/ac1771/mountdir"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "/common/home/ac1771/Desktop/Operating Systems/project_4",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
