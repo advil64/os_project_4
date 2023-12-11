@@ -520,18 +520,8 @@ static int rufs_mkdir(const char *path, mode_t mode)
 static int rufs_rmdir(const char *path)
 {
 
-	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
-
-	// Step 2: Call get_node_by_path() to get inode of target directory
-
-	// Step 3: Clear data block bitmap of target directory
-
-	// Step 4: Clear inode bitmap and its data block
-
-	// Step 5: Call get_node_by_path() to get inode of parent directory
-
-	// Step 6: Call dir_remove() to remove directory entry of target directory in its parent directory
-
+	// For this project, you don't need to fill this function
+	// But DO NOT DELETE IT!
 	return 0;
 }
 
@@ -646,18 +636,8 @@ static int rufs_write(const char *path, const char *buffer, size_t size, off_t o
 static int rufs_unlink(const char *path)
 {
 
-	// Step 1: Use dirname() and basename() to separate parent directory path and target file name
-
-	// Step 2: Call get_node_by_path() to get inode of target file
-
-	// Step 3: Clear data block bitmap of target file
-
-	// Step 4: Clear inode bitmap and its data block
-
-	// Step 5: Call get_node_by_path() to get inode of parent directory
-
-	// Step 6: Call dir_remove() to remove directory entry of target file in its parent directory
-
+	// For this project, you don't need to fill this function
+	// But DO NOT DELETE IT!
 	return 0;
 }
 
