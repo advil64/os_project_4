@@ -19,7 +19,7 @@
 
 // Derived Values
 #define INODE_BLOCKS (MAX_INUM / (BLOCK_SIZE / 256))
-#define INODES_PER_BLOCK ()
+#define INODES_PER_BLOCK (BLOCK_SIZE / sizeof(struct inode))
 
 
 struct superblock {
