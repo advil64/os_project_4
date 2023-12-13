@@ -30,6 +30,6 @@
                 "kind": "build",
                 "isDefault": true
             }
-        },
+        }
     ]
 }

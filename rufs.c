@@ -2,7 +2,8 @@
  *  Copyright (C) 2023 CS416 Rutgers CS
  *	Tiny File System
  *	File:	rufs.c
- *
+ * Advith Chegu
+ * Taj Chahal
  */
 
 #define FUSE_USE_VERSION 26
@@ -504,17 +505,17 @@ static int rufs_opendir(const char *path, struct fuse_file_info *fi)
 }
 
 /*
- * This function is called when reading a directory (e.g., ls command). It takes the path of the file or directory 
- * as an input. To implement this function, read the inode and see if this path is valid, read all directory entries 
+ * This function is called when reading a directory (e.g., ls command). It takes the path of the file or directory
+ * as an input. To implement this function, read the inode and see if this path is valid, read all directory entries
  * of the current directory into the input buffer. You might be confused about how to fill this buffer.
-*/
+ */
 static int rufs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
 
     // Step 1: Call get_node_by_path() to get inode from path
-    struct inode *dir_inode = (struct inode *) malloc(sizeof(struct inode));
+    struct inode *dir_inode = (struct inode *)malloc(sizeof(struct inode));
     int status = get_node_by_path(path, 0, dir_inode);
-    if(status != 0)
+    if (status != 0)
     {
         return -ENOENT;
     }
@@ -522,19 +523,19 @@ static int rufs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, 
     // Step 2: Read directory entries from its data blocks, and copy them to filler
     struct dirent *dir_block = (struct dirent *)calloc(1, BLOCK_SIZE);
     int i, j = 0;
-    for(i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++)
     {
-        if(dir_inode->direct_ptr[i] == 0)
+        if (dir_inode->direct_ptr[i] == 0)
         {
             break;
         }
         bio_read(dir_inode->direct_ptr[i], dir_block);
 
-        for(j = 0; j < BLOCK_SIZE / sizeof(struct dirent); j++)
+        for (j = 0; j < BLOCK_SIZE / sizeof(struct dirent); j++)
         {
-            if(dir_block->valid == 1)
+            if (dir_block->valid == 1)
             {
-                struct inode* temp = (struct inode*) malloc(sizeof(struct inode));
+                struct inode *temp = (struct inode *)malloc(sizeof(struct inode));
                 readi(dir_block->ino, temp);
                 filler(buffer, dir_block->name, &temp->vstat, 0);
             }
@@ -789,7 +790,7 @@ static int rufs_write(const char *path, const char *buffer, size_t size, off_t o
     memcpy(contents + offset, buffer, size);
 
     // compare the blocks to be written vs blocks that already exist
-    int blocks_to_iter = (file_inode->vstat.st_blocks > ((bytes_to_write - 1) / BLOCK_SIZE + 1)) ? file_inode->vstat.st_blocks : bytes_to_write / BLOCK_SIZE;
+    int blocks_to_iter = (file_inode->vstat.st_blocks > ((bytes_to_write - 1) / BLOCK_SIZE + 1)) ? file_inode->vstat.st_blocks : ((bytes_to_write - 1) / BLOCK_SIZE + 1);
 
     // Step 4: Update the inode info and write it to disk
     for (i = 0; i < blocks_to_iter; i++)
